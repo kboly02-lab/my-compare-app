@@ -1,23 +1,11 @@
-
 import streamlit as st
 import pandas as pd
 import re
-import os
 
 # 1. 페이지 설정
 st.set_page_config(page_title="설비 비교 프로젝트 선정", layout="wide")
 
-# 2. 스타일 설정
-st.markdown("""
-    <style>
-    .filter-container { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ddd; }
-    .excel-table { border-collapse: collapse; width: 100%; font-size: 11px; border: 2px solid #444; }
-    .excel-table td { border: 1px solid #ccc; padding: 5px 8px; }
-    .header-col { background-color: #e8eef7; font-weight: bold; width: 140px; text-align: center; }
-    </style>
-""", unsafe_allow_html=True)
-
-# 데이터 안전 추출 함수
+# 2. 안전한 데이터 추출 함수 (KeyError 방지 및 병합셀 처리)
 def get_val(df, r, c):
     try:
         if r < df.shape[0] and c < df.shape[1]:
@@ -28,6 +16,7 @@ def get_val(df, r, c):
 
 def extract_num(val):
     try:
+        # 숫자만 추출 (콤마 제거)
         n = re.sub(r'[^0-9.]', '', str(val).replace(',', ''))
         return float(n) if n else 0
     except: return 0
@@ -41,99 +30,50 @@ if uploaded_file is not None:
         if uploaded_file.name.endswith('.csv'): df = pd.read_csv(uploaded_file, header=None)
         else: df = pd.read_excel(uploaded_file, header=None)
         
-        st.success(f"✅ 파일을 읽었습니다. 검색을 시작하세요.")
+        st.success("✅ 파일을 성공적으로 읽었습니다.")
 
-        # 4. 필터 UI (요청하신 리스트 100% 복구)
-        st.markdown('<div class="filter-container">', unsafe_allow_html=True)
+        # --- 필터 UI (사용자 요청 리스트 구성) ---
+        st.markdown('<div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">', unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
-        with c1: v_loc = st.selectbox("위치", ["전체", "서울", "인천", "경기", "대전", "광주", "대구", "부산", "세종", "강원"])
-        with c2: v_year = st.selectbox("년도", ["전체", "2020", "2021", "2022", "2023", "2024", "2025", "2026"])
-        with c3: v_hvac = st.selectbox("냉난방방식", ["전체", "개별가스", "지역난방", "중앙난방", "EHP"])
+        
+        # 위치: 서울~강원 + 기타
+        loc_list = ["서울", "인천", "경기", "대전", "광주", "대구", "부산", "세종", "강원"]
+        with c1: v_loc = st.selectbox("위치", ["전체"] + loc_list + ["기타"])
+        
+        # 년도: 2020~2026 + 기타
+        year_list = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"]
+        with c2: v_year = st.selectbox("년도", ["전체"] + year_list + ["기타"])
+        
+        # 냉난방방식
+        hvac_list = ["개별가스", "지역난방", "중앙난방", "EHP"]
+        with c3: v_hvac = st.selectbox("냉난방방식", ["전체"] + hvac_list + ["기타"])
+        
+        # 세대수 합산 범위
         with c4: v_unit = st.selectbox("세대수", ["전체", "100세대 미만", "101~300세대", "301~500세대", "501~1000세대", "1001~2000세대", "2001~3000세대", "3001세대 이상"])
         
         c5, c6, c7 = st.columns(3)
-        with c5: v_type = st.selectbox("건물유형", ["전체", "공동주택", "주상복합", "오피스텔", "리모델링"])
-        with c6: v_area = st.selectbox("연면적(평)", ["전체", "~3만", "3~5만", "5~7만", "7~10만", "10~20만", "20만~"])
+        # 건물유형
+        type_list = ["공동주택", "주상복합", "오피스텔", "리모델링"]
+        with c5: v_type = st.selectbox("건물유형", ["전체"] + type_list + ["기타"])
         
-        # 🔥 요청하신 소방 관련 리스트 4개 정확히 반영
-        with c7: v_fire = st.selectbox("소방/성능위주", ["전체", "해당없음", "소방포함", "성능위주", "소방특화"])
+        # 연면적 범위
+        with c6: v_area = st.selectbox("연면적(평)", ["전체", "~30000", "30001~50000", "50001~70000", "70001~100000", "100001~200000", "200001~"])
+        
+        # 소방포함 (요청하신 정확한 4종 리스트)
+        fire_list = ["소방포함/ 성능위주", "소방포함/ 비성능위주", "소방제외/ 성능위주", "소방제외/ 비성능위주"]
+        with c7: v_fire = st.selectbox("소방포함", ["전체"] + fire_list + ["기타"])
 
-        v_specs = st.multiselect("특화설비", ["우수처리", "중수처리", "연료전지", "지열", "정화조", "사우나", "음식물", "쓰레기", "수영장"])
-        v_notes = st.multiselect("특수사항", ["지하단차", "초고층", "준초고층", "진출입", "산악", "공항", "지하철"])
+        # 특화설비 및 특수사항
+        spec_list = ["우수처리", "중수처리", "연료전지", "지열", "정화조", "사우나", "음식물", "쓰레기", "수영장"]
+        v_specs = st.selectbox("특화설비", ["전체", "없음", "기타"] + spec_list)
+        
+        note_list = ["지하단차", "초고층", "준초고층", "진출입", "산악", "공항", "지하철"]
+        v_notes = st.selectbox("특수사항", ["전체", "없음", "기타"] + note_list)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # 5. 검색 로직
+        # 4. 검색 로직 (D열=3번 인덱스부터 2칸씩 점프)
         if st.button("🚀 프로젝트 조회", use_container_width=True):
             found_indices = []
             for j in range(3, df.shape[1], 2):
-                name = get_val(df, 0, j)
-                if not name or "Unnamed" in name: continue
-
-                # 데이터 좌표 추출
-                row_year = get_val(df, 4, j)
-                row_hvac = get_val(df, 5, j)
-                row_type = get_val(df, 6, j)
-                row_fire_val = get_val(df, 6, j) + get_val(df, 6, j+1) # 건물유형 + 비고란 통합검색
-                
-                row_unit = extract_num(get_val(df, 7, j)) + extract_num(get_val(df, 8, j))
-                row_area = extract_num(get_val(df, 14, j))
-                
-                # 특화/특수 (45~50행)
-                all_notes = ""
-                for r in range(45, 51):
-                    all_notes += get_val(df, r, j) + get_val(df, r, j+1)
-
-                # 매칭 조건
-                m_loc = (v_loc == "전체") or (v_loc in name)
-                m_year = (v_year == "전체") or (v_year in row_year)
-                m_hvac = (v_hvac == "전체") or (v_hvac in row_hvac)
-                m_type = (v_type == "전체") or (v_type in row_type)
-                
-                # 소방 필터 (사용자가 선택한 4개 항목 대응)
-                if v_fire == "전체": m_fire = True
-                elif v_fire == "해당없음": m_fire = ("소방" not in row_fire_val and "성능" not in row_fire_val)
-                else: m_fire = (v_fire in row_fire_val)
-                
-                # 세대수/연면적 구간 (원래 규칙)
-                m_unit = True
-                if v_unit != "전체":
-                    if "100세대 미만" in v_unit: m_unit = row_unit < 100
-                    elif "101~300" in v_unit: m_unit = 101 <= row_unit <= 300
-                    elif "301~500" in v_unit: m_unit = 301 <= row_unit <= 500
-                    elif "501~1000" in v_unit: m_unit = 501 <= row_unit <= 1000
-                    elif "1001~2000" in v_unit: m_unit = 1001 <= row_unit <= 2000
-                    elif "2001~3000" in v_unit: m_unit = 2001 <= row_unit <= 3000
-                    else: m_unit = row_unit >= 3001
-
-                m_area = True
-                if v_area != "전체":
-                    if "~3만" in v_area: m_area = row_area <= 30000
-                    elif "3~5만" in v_area: m_area = 30001 <= row_area <= 50000
-                    elif "5~7만" in v_area: m_area = 50001 <= row_area <= 70000
-                    elif "7~10만" in v_area: m_area = 70001 <= row_area <= 100000
-                    elif "10~20만" in v_area: m_area = 100001 <= row_area <= 200000
-                    else: m_area = row_area > 200000
-
-                m_spec = all(s in all_notes for s in v_specs)
-                m_note = all(n in all_notes for n in v_notes)
-
-                if all([m_loc, m_year, m_hvac, m_type, m_fire, m_unit, m_area, m_spec, m_note]):
-                    found_indices.append(j)
-
-            # 6. 결과 출력
-            if found_indices:
-                st.success(f"🎯 {len(found_indices)}개의 프로젝트를 찾았습니다.")
-                for col in found_indices:
-                    with st.expander(f"📌 {get_val(df, 0, col)}"):
-                        html = '<table class="excel-table">'
-                        for r in range(len(df)):
-                            h1, h2 = get_val(df, r, 0), get_val(df, r, 1)
-                            d1, d2 = get_val(df, r, col), get_val(df, r, col+1)
-                            if h1 or h2 or d1 or d2:
-                                html += f'<tr><td class="header-col">{h1}</td><td class="header-col">{h2}</td>'
-                                html += f'<td>{d1}</td><td>{d2}</td></tr>'
-                        st.markdown(html + '</table>', unsafe_allow_html=True)
-            else:
-                st.warning("🧐 조건에 맞는 프로젝트가 없습니다.")
-    except Exception as e:
-        st.error(f"⚠️ 오류 발생: {e}")
+                # [위치] 1행 (0번 인덱스)
+                p_name = get_
