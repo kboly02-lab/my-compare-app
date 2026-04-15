@@ -9,7 +9,7 @@ st.set_page_config(page_title="설비 비교 프로젝트 선정", layout="wide"
 # 2. 스타일 설정
 st.markdown("""
     <style>
-    .filter-container { background-color: #ffff00; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ccc; }
+    .filter-container { background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ddd; }
     .excel-table { border-collapse: collapse; width: 100%; font-size: 11px; border: 2px solid #444; }
     .excel-table th, .excel-table td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; }
     .excel-table th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
@@ -29,19 +29,22 @@ def extract_num(val):
 
 @st.cache_data
 def load_data():
+    # 파일명 리스트 확인
     file_names = ["비교프로젝트_설비.xlsx - Sheet1.csv", "비교프로젝트_설비.csv", "비교프로젝트_설비.xlsx"]
     for f in file_names:
         if os.path.exists(f):
             try:
-                if f.endswith('.csv'): return pd.read_csv(f, header=None)
-                else: return pd.read_excel(f, header=None)
+                if f.endswith('.csv'): 
+                    return pd.read_csv(f, header=None)
+                else: 
+                    return pd.read_excel(f, header=None)
             except: continue
     return None
 
 df = load_data()
 
 if df is None:
-    st.error("❌ 데이터 파일을 찾을 수 없습니다.")
+    st.error("❌ '비교프로젝트_설비.xlsx' 또는 CSV 파일을 찾을 수 없습니다.")
 else:
     st.title("📂 설비 비교 프로젝트 선정 시스템")
     
@@ -59,31 +62,35 @@ else:
     with c5: v_type = st.selectbox("건물유형", ["전체", "공동주택", "주상복합", "오피스텔", "리모델링", "일반건축물"])
     with c6: v_area = st.selectbox("연면적", ["전체", "~30,000평", "30,001~50,000평", "50,001~70,000평", "70,001~100,000평", "100,001~200,000평", "200,001~300,000평", "300,001평~"])
     
-    # 소방 선택지 (데이터의 '성능위주설계' 포함 여부를 확인하기 위해 키워드 중심으로 구성)
-    fire_options = ["전체", "소방포함 / 성능위주", "소방포함 / 비성능위주", "소방제외 / 성능위주", "소방제외 / 비성능위주"]
+    # 소방 선택지
+    fire_options = ["전체", "소방포함", "소방제외", "성능위주", "비성능위주"]
     with c7: v_fire = st.selectbox("소방/성능위주설계", fire_options)
 
-    with c8: v_specs = st.multiselect("특화설비", ["우수처리", "중수처리", "연료전지", "지열", "정화조", "사우나", "음식물", "쓰레기", "수영장", "주차", "없음"])
-    with c9: v_notes = st.multiselect("특수사항", ["지하단차", "초고층", "준초고층", "진출입", "산악", "공항", "지하철", "없음"])
+    with c8: v_specs = st.multiselect("특화설비", ["우수처리", "중수처리", "연료전지", "지열", "정화조", "사우나", "음식물", "쓰레기", "수영장", "주차"])
+    with c9: v_notes = st.multiselect("특수사항", ["지하단차", "초고층", "준초고층", "진출입", "산악", "공항", "지하철"])
     st.markdown('</div>', unsafe_allow_html=True)
 
     if st.button("🚀 프로젝트 조회", use_container_width=True):
         found_indices = []
-        # 프로젝트 열: D, F, H... (인덱스 3, 5, 7...)
+        # 프로젝트 데이터 시작 열 (D열=인덱스 3부터 2칸씩 이동)
         project_cols = [j for j in range(3, len(df.columns), 2)]
 
         for j in project_cols:
-            # 1행 프로젝트명
+            # 프로젝트명 (0행)
             p_name = str(df.iloc[0, j]) if pd.notna(df.iloc[0, j]) else ""
             if not p_name.strip() or "공사금액" in p_name: continue
 
-            # --- 필터 로직 (전부 포함 여부로 체크) ---
+            # 1. 위치/년도/냉난방/유형 (각 행 인덱스 재점검)
+            val_year = str(df.iloc[3, j]) 
+            val_hvac = str(df.iloc[4, j])
+            val_type = str(df.iloc[5, j])
+            
             m_loc = (v_loc == "전체") or (v_loc in p_name)
-            m_year = (v_year == "전체") or (v_year in str(df.iloc[3, j]))
-            m_hvac = (v_hvac == "전체") or (v_hvac in str(df.iloc[4, j]))
-            m_type = (v_type == "전체") or (v_type in str(df.iloc[5, j]))
+            m_year = (v_year == "전체") or (v_year in val_year)
+            m_hvac = (v_hvac == "전체") or (v_hvac in val_hvac)
+            m_type = (v_type == "전체") or (v_type in val_type)
 
-            # 세대수 합산
+            # 2. 세대수 합산 (6행 + 7행)
             u_val = extract_num(df.iloc[6, j]) + extract_num(df.iloc[7, j])
             m_unit = True
             if v_unit != "전체":
@@ -93,4 +100,61 @@ else:
                 elif "501~1000" in v_unit: m_unit = 501 <= u_val <= 1000
                 elif "1001~2000" in v_unit: m_unit = 1001 <= u_val <= 2000
                 elif "2001~3000" in v_unit: m_unit = 2001 <= u_val <= 3000
-                elif "30
+                elif "3001세대" in v_unit: m_unit = u_val >= 3001
+
+            # 3. 연면적 (13행)
+            a_val = extract_num(df.iloc[13, j])
+            m_area = True
+            if v_area != "전체":
+                if "~30,000" in v_area: m_area = a_val <= 30000
+                elif "30,001~50,000" in v_area: m_area = 30001 <= a_val <= 50000
+                elif "50,001~70,000" in v_area: m_area = 50001 <= a_val <= 70000
+                elif "70,001~100,000" in v_area: m_area = 70001 <= a_val <= 100000
+                elif "100,001~200,000" in v_area: m_area = 100001 <= a_val <= 200000
+                elif "200,001~300,000" in v_area: m_area = 200001 <= a_val <= 300000
+                elif "300,001" in v_area: m_area = a_val > 300000
+
+            # 4. 소방/성능위주 (5행의 비고열 j+1 확인)
+            fire_note = str(df.iloc[5, j+1]) if pd.notna(df.iloc[5, j+1]) else ""
+            m_fire = True
+            if v_fire != "전체":
+                if v_fire == "소방포함": m_fire = "소방포함" in fire_note
+                elif v_fire == "소방제외": m_fire = "소방제외" in fire_note
+                elif v_fire == "성능위주": m_fire = "성능위주" in fire_note
+                elif v_fire == "비성능위주": m_fire = "성능위주" not in fire_note
+
+            # 5. 특화설비 (45행)
+            spec_val = str(df.iloc[45, j]) if pd.notna(df.iloc[45, j]) else ""
+            m_spec = all(s in spec_val for s in v_specs) if v_specs else True
+
+            # 6. 특수사항 (47행 + 47행 비고)
+            note_val = str(df.iloc[47, j]) + str(df.iloc[47, j+1])
+            m_note = all(n in note_val for n in v_notes) if v_notes else True
+
+            if all([m_loc, m_year, m_hvac, m_type, m_unit, m_area, m_fire, m_spec, m_note]):
+                found_indices.append(j)
+
+        # 결과 출력
+        if found_indices:
+            st.success(f"🎯 {len(found_indices)}개의 프로젝트를 찾았습니다.")
+            for col in found_indices:
+                with st.expander(f"📌 {df.iloc[0, col]}"):
+                    html = '<table class="excel-table">'
+                    html += f'<tr><th colspan="4" class="project-title">{df.iloc[0, col]}</th></tr>'
+                    # 50행까지만 출력
+                    for r in range(min(50, len(df))):
+                        # A, B열은 헤더 정보
+                        h1 = str(df.iloc[r, 0]) if pd.notna(df.iloc[r, 0]) else ""
+                        h2 = str(df.iloc[r, 1]) if pd.notna(df.iloc[r, 1]) else ""
+                        # 해당 프로젝트 데이터 및 비고
+                        d1 = str(df.iloc[r, col]) if pd.notna(df.iloc[r, col]) else ""
+                        d2 = str(df.iloc[r, col+1]) if pd.notna(df.iloc[r, col+1]) else ""
+                        
+                        html += f'<tr><td class="header-col">{h1}</td>'
+                        html += f'<td class="header-col">{h2}</td>'
+                        html += f'<td>{d1}</td>'
+                        html += f'<td>{d2}</td></tr>'
+                    html += '</table>'
+                    st.markdown(html, unsafe_allow_html=True)
+        else:
+            st.warning("🧐 일치하는 프로젝트가 없습니다. 조건을 완화해 보세요.")
