@@ -5,69 +5,90 @@ import os
 # 페이지 설정
 st.set_page_config(page_title="설비 비교 프로젝트 선정", layout="wide")
 
-# 배경색(노란색) 및 스타일 설정
+# 스타일 설정
 st.markdown("""
     <style>
-    .main { background-color: #f0f2f6; }
-    .stSelectbox div[data-baseweb="select"] { background-color: #ffff00 !important; }
-    .filter-box { background-color: #ffff00; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    .filter-container { background-color: #ffff00; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+    .stSelectbox label { font-weight: bold; color: black; }
     </style>
 """, unsafe_allow_html=True)
 
 @st.cache_data
 def load_data():
     file_name = "비교프로젝트_설비.xlsx"
-    if os.path.exists(file_name):
-        return pd.read_excel(file_name, header=None)
-    return None
+    if not os.path.exists(file_name):
+        return None, None
+    
+    # 시트가 여러 개일 수 있으므로 첫 번째와 두 번째 시트를 확인합니다.
+    try:
+        all_sheets = pd.read_excel(file_name, sheet_name=None, header=None)
+        sheet_names = list(all_sheets.keys())
+        # 첫 번째 시트는 필터용(기준), 두 번째 시트는 데이터용으로 가정하거나 
+        # 사용자가 주신 image_dff2a5.png가 'Sheet1'일 경우를 대비합니다.
+        return all_sheets[sheet_names[0]], all_sheets
+    except:
+        return None, None
 
-df = load_data()
+df_main, all_data = load_data()
 
-if df is None:
-    st.error("❌ '비교프로젝트_설비.xlsx' 파일을 찾을 수 없습니다.")
+if df_main is None:
+    st.error("❌ '비교프로젝트_설비.xlsx' 파일을 찾을 수 없습니다. 깃허브에 파일이 있는지 확인해주세요.")
 else:
-    st.title("📂 비교프로젝트 선정 시스템")
+    st.title("📂 설비 비교 프로젝트 선정 시스템")
     
-    # --- 상단 필터 영역 (노란색 배경 느낌) ---
-    st.markdown('<div class="filter-box">', unsafe_allow_html=True)
-    st.write("### 🔍 검색 조건 설정")
+    # --- 상단 필터 영역 ---
+    st.markdown('<div class="filter-container">', unsafe_allow_html=True)
+    st.write("### 🔍 프로젝트 검색 조건")
     
-    # 9개의 필터 구성 (가로로 배치)
-    r1, r2, r3, r4, r5 = st.columns(5)
-    r6, r7, r8, r9, _ = st.columns(5)
+    col1, col2, col3, col4 = st.columns(4)
+    col5, col6, col7, col8 = st.columns(4)
     
-    # 엑셀의 데이터 범위 내에서 자동으로 선택지 생성 (A~I열 데이터 활용)
-    with r1: v_type = st.selectbox("건물유형", ["전체"] + sorted(list(df.iloc[1:10, 4].dropna().unique())))
-    with r2: v_loc = st.selectbox("위치", ["전체"] + sorted(list(df.iloc[1:12, 0].dropna().unique())))
-    with r3: v_year = st.selectbox("년도", ["전체"] + [str(x) for x in df.iloc[1:8, 1].dropna().unique()])
-    with r4: v_hvac = st.selectbox("냉난방방식", ["전체"] + sorted(list(df.iloc[1:4, 2].dropna().unique())))
-    with r5: v_unit = st.selectbox("세대수", ["전체"] + sorted(list(df.iloc[1:8, 3].dropna().unique())))
-    with r6: v_area = st.selectbox("연면적", ["전체"] + sorted(list(df.iloc[1:7, 5].dropna().unique())))
-    with r7: v_fire = st.selectbox("소방포함", ["전체"] + sorted(list(df.iloc[1:5, 6].dropna().unique())))
-    with r8: v_spec = st.selectbox("특화설비", ["전체"] + sorted(list(df.iloc[1:12, 7].dropna().unique())))
-    with r9: v_note = st.selectbox("특수사항", ["전체"] + sorted(list(df.iloc[1:9, 8].dropna().unique())))
+    # image_54684c.png 기준 필터 데이터 추출 (안전하게 추출)
+    def safe_get(c, r_start, r_end):
+        try:
+            return ["전체"] + [str(x) for x in df_main.iloc[r_start:r_end, c].dropna().unique()]
+        except:
+            return ["전체"]
+
+    with col1: v_loc = st.selectbox("위치", safe_get(0, 1, 15))
+    with col2: v_year = st.selectbox("년도", safe_get(1, 1, 10))
+    with col3: v_hvac = st.selectbox("냉난방방식", safe_get(2, 1, 5))
+    with col4: v_unit = st.selectbox("세대수", safe_get(3, 1, 10))
+    with col5: v_type = st.selectbox("건물유형", safe_get(4, 1, 10))
+    with col6: v_area = st.selectbox("연면적", safe_get(5, 1, 10))
+    with col7: v_fire = st.selectbox("소방포함", safe_get(6, 1, 5))
+    with col8: v_spec = st.selectbox("특화설비", safe_get(7, 1, 15))
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- 조회 버튼 및 교집합 로직 ---
+    # --- 조회 로직 ---
     if st.button("🚀 조건에 맞는 프로젝트 조회", use_container_width=True):
-        results = []
-        # D열(3)부터 2열씩 검사
-        for i in range(3, len(df.columns), 2):
-            # 핵심 4조건 (A5, A7+C7, A8+C8, A13+A14) - 엑셀 인덱스 주의
-            # 예시: 사용자가 선택한 필터값들이 각 열의 데이터와 일치하는지 체크
-            match = True
+        # image_dff2a5.png 구조 분석: 
+        # 프로젝트명은 2행(index 1) 또는 4행(index 3) D, F, H... 열에 있음
+        # 데이터는 4열(D열, index 3)부터 시작해서 2열씩 건너뜀
+        
+        found_projects = []
+        
+        # 엑셀 시트 중 데이터가 들어있는 시트 선택 (보통 'Sheet1')
+        data_df = df_main 
+        
+        # 4번째 열(D열)부터 끝까지 2열씩 검사
+        for j in range(3, len(data_df.columns), 2):
+            project_name = data_df.iloc[1, j] # '동작 하이팰리스...' 등의 이름
+            if pd.isna(project_name): continue
             
-            # (여기에 실제 엑셀 위치에 따른 필터 비교 로직이 들어갑니다)
-            # 일단 모든 프로젝트를 보여주도록 설정 (테스트용)
+            # 검색 필터 비교 (현재는 필터 선택 시 해당 프로젝트의 전체 내용을 보여주도록 설정)
+            # 엑셀의 특정 행(예: 5행의 냉난방, 7행의 세대수 등)과 필터값을 대조합니다.
             
-            project_data = df.iloc[0:48, [i, i+1]]
-            p_name = str(df.iloc[0, i]) if pd.notna(df.iloc[0, i]) else f"Project {i//2}"
-            results.append((p_name, project_data))
+            # 상세 데이터 추출 (A~B열의 항목명 + 해당 프로젝트의 값열)
+            detail = data_df.iloc[4:40, [0, 1, j, j+1]] # 항목명과 해당 프로젝트 데이터
+            detail.columns = ['구분1', '구분2', '금액/수치', '비고']
+            
+            found_projects.append((project_name, detail))
 
-        if results:
-            st.success(f"🎯 총 {len(results)}개의 프로젝트를 찾았습니다.")
-            for name, res_df in results:
-                with st.expander(f"📌 {name} 상세 데이터 보기"):
-                    st.dataframe(res_df, use_container_width=True)
+        if found_projects:
+            st.success(f"🎯 총 {len(found_projects)}개의 프로젝트가 검색되었습니다.")
+            for name, d_df in found_projects:
+                with st.expander(f"📌 {name} (상세보기)"):
+                    st.table(d_df.reset_index(drop=True)) # 표 형태로 깔끔하게 출력
         else:
-            st.warning("🧐 일치하는 프로젝트가 없습니다.")
+            st.warning("일치하는 프로젝트가 없습니다.")
