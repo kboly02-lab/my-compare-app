@@ -1,0 +1,1159 @@
+<div id="app"></div>
+<style>
+:root{
+  --bg:#f4f5f7;
+  --card:#ffffff;
+  --border:#e3e6eb;
+  --ink:#181c25;
+  --sub:#6b7280;
+  --accent:#2f6feb;
+  --accent-dark:#2457c2;
+  --accent-soft:#eaf1ff;
+  --table-head:#161b28;
+  --danger:#d64545;
+  --ok:#1e9e63;
+  --radius:10px;
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{box-sizing:border-box;}
+body,html{margin:0;padding:0;}
+#app{background:var(--bg);min-height:100vh;padding:28px 32px 60px;color:var(--ink);}
+.wrap{max-width:1180px;margin:0 auto;}
+.eyebrow{display:flex;align-items:center;gap:8px;color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.2px;margin-bottom:6px;}
+.eyebrow .dot{width:8px;height:8px;background:var(--accent);border-radius:2px;display:inline-block;}
+.title-row{display:flex;align-items:baseline;gap:6px;border-left:4px solid var(--accent);padding-left:14px;margin-bottom:22px;}
+h1{font-size:26px;margin:0;font-weight:800;letter-spacing:-.3px;}
+.title-sub{color:var(--sub);font-size:13px;font-weight:500;}
+
+.tabs{display:flex;gap:26px;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.tab{padding:10px 2px 12px;font-size:15px;font-weight:600;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;user-select:none;}
+.tab.active{color:var(--accent);border-color:var(--accent);}
+.tab:hover:not(.active){color:var(--ink);}
+
+.banner{display:flex;gap:10px;align-items:flex-start;background:var(--accent-soft);border:1px solid #cddcfb;color:#1d3f8f;font-size:13px;padding:12px 14px;border-radius:8px;margin-bottom:18px;line-height:1.55;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 22px 18px;margin-bottom:18px;}
+.card h3{font-size:14px;margin:0 0 16px;font-weight:700;}
+
+.grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1fr;gap:14px;}
+@media (max-width:1000px){.grid{grid-template-columns:1fr 1fr;}}
+.field label{display:block;font-size:12px;color:var(--sub);font-weight:600;margin-bottom:6px;}
+.field input[type=text], .field select{
+  width:100%;padding:9px 11px;border:1px solid #d7dae0;border-radius:7px;font-size:13.5px;background:#fff;color:var(--ink);
+  height:38px;
+}
+.field input[type=text]:focus, .field select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent);}
+.stepper{display:flex;align-items:center;border:1px solid #d7dae0;border-radius:7px;overflow:hidden;height:38px;}
+.stepper button{width:32px;height:38px;border:none;background:#f2f3f5;color:var(--ink);font-size:16px;cursor:pointer;flex:0 0 auto;}
+.stepper button:hover{background:#e6e8eb;}
+.stepper input{flex:1;border:none;text-align:center;font-size:13.5px;height:100%;width:100%;min-width:0;color:var(--ink);}
+.stepper input:focus{outline:none;}
+
+.actionbar{display:flex;align-items:center;justify-content:space-between;margin:2px 0 12px;flex-wrap:wrap;gap:10px;}
+.result-count{font-size:13.5px;color:var(--sub);font-weight:600;}
+.result-count b{color:var(--ink);}
+.btns{display:flex;gap:8px;flex-wrap:wrap;}
+button.btn{border:none;border-radius:7px;font-size:13.5px;font-weight:700;padding:9px 16px;cursor:pointer;transition:background .12s;}
+button.btn.primary{background:var(--accent);color:#fff;}
+button.btn.primary:hover{background:var(--accent-dark);}
+button.btn.primary:disabled{background:#b9c8ea;cursor:not-allowed;}
+button.btn.ghost{background:#fff;color:var(--ink);border:1px solid #d7dae0;}
+button.btn.ghost:hover{background:#f2f3f5;}
+button.btn.danger{background:#fff;color:var(--danger);border:1px solid #f0c4c4;}
+button.btn.danger:hover{background:#fdeeee;}
+button.btn.big{padding:10px 22px;font-size:14.5px;}
+
+.tablewrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.scrollx{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:920px;}
+thead th{background:var(--table-head);color:#fff;font-size:12.5px;font-weight:700;padding:12px 10px;text-align:left;white-space:nowrap;}
+tbody td{padding:10px 10px;font-size:13px;border-bottom:1px solid #eef0f3;color:var(--ink);vertical-align:top;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#fafbfd;}
+td.num{text-align:right;white-space:nowrap;}
+td.rank{color:var(--sub);font-weight:700;text-align:center;width:44px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:700;background:#eef1f5;color:#44506b;}
+.empty-state{background:var(--table-head);color:#fff;text-align:center;padding:54px 20px;font-size:14px;line-height:2;}
+.empty-state b{font-size:15.5px;}
+.empty-state .sub{color:#9aa4bb;font-size:12.5px;}
+
+.file-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+.file-hint{font-size:12px;color:var(--sub);}
+.upload-preview{background:#f8fafc;border:1px dashed #c7d0dd;border-radius:8px;padding:12px 14px;font-size:13px;margin-top:10px;display:none;}
+.upload-preview.show{display:block;}
+.upload-preview .row{display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#1b2233;color:#fff;padding:11px 20px;border-radius:8px;font-size:13.5px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:50;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+.meta-line{font-size:12.5px;color:var(--sub);margin-bottom:14px;}
+input[type=file]{display:none;}
+
+.lock-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pw-form{display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #d7dae0;border-radius:8px;padding:8px 10px;}
+.pw-form input{border:1px solid #d7dae0;border-radius:6px;padding:7px 10px;font-size:13px;width:140px;}
+.pw-form input:focus{outline:2px solid var(--accent);border-color:var(--accent);}
+.edit-cell input, .edit-cell select{width:100%;min-width:70px;padding:5px 6px;border:1px solid #d7dae0;border-radius:5px;font-size:12.5px;background:#fff;}
+.edit-cell input:focus, .edit-cell select:focus{outline:2px solid var(--accent);border-color:var(--accent);}
+tr.editing td{background:#fbfcfe;}
+.badge-edit{background:#fff4e5;color:#a15c00;border:1px solid #ffd9a0;font-weight:700;font-size:11px;padding:3px 9px;border-radius:20px;}
+
+.name-cell{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;max-width:260px;word-break:break-word;}
+.name-cell:hover{color:var(--accent);}
+.name-cell.expanded{-webkit-line-clamp:unset;overflow:visible;max-width:420px;white-space:normal;color:var(--ink);}
+</style>
+<script>
+(function(){
+
+/* ---------------- xlsx 라이브러리 지연 로드 (초기 로딩 속도 개선) ---------------- */
+let xlsxLoadPromise = null;
+function ensureXLSX(){
+  if(window.XLSX) return Promise.resolve();
+  if(!xlsxLoadPromise){
+    xlsxLoadPromise = new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      s.onload = ()=>resolve();
+      s.onerror = ()=>{ xlsxLoadPromise=null; reject(new Error('xlsx load failed')); };
+      document.head.appendChild(s);
+    });
+  }
+  return xlsxLoadPromise;
+}
+
+/* ---------------- 지역 / 건물종류 키워드 정의 ---------------- */
+const BUILDING_CATEGORIES = ["미선택","공동주택","주상복합","오피스텔","리모델링","오피스","데이터센터","기타"];
+const REGIONS = ["미선택","서울","인천","경기남부","경기북부","강원도","충청도","경상도","전라도","제주도","거제도","대전","광주","대구","부산","울산"];
+const COMPLETION_YEAR_OPTIONS = ["미선택","2021","2022","2023","2024","2025","2026","2027","2028","2029","2030","2031"];
+const AREA_RANGES = [
+  {label:"미선택", min:null, max:null},
+  {label:"5,000평 이하", min:0, max:5000},
+  {label:"5,001평 ~ 10,000평", min:5001, max:10000},
+  {label:"10,001평 ~ 30,000평", min:10001, max:30000},
+  {label:"30,001평 ~ 50,000평", min:30001, max:50000},
+  {label:"50,001평 ~ 80,000평", min:50001, max:80000},
+  {label:"80,001평 ~ 100,000평", min:80001, max:100000},
+  {label:"100,001평 ~ 150,000평", min:100001, max:150000},
+  {label:"150,001평 이상", min:150001, max:Infinity},
+];
+const PYEONG = 3.305785;
+
+const SEOUL_GU = ["서울","방배","잠원","신길","신반포","성수","서소문","양평동","세운","한남동","신당","남서울","가락","상봉","광장","서리풀","구일","용현학익","강남","서초","송파","강동","마포","영등포","동작","관악","금천","구로","양천","강서","종로","중구","용산","성동","광진","동대문","중랑","성북","도봉","노원","은평","서대문","강북"];
+const INCHEON = ["인천","검단","송도","미추홀","계양","부평","연수","남동","강화","옹진","용현","PGC","포스코글로벌"];
+const GG_NORTH = ["고양","의정부","파주","양주","동두천","포천","가평","연천","남양주","구리","문봉동"];
+const GG_SOUTH = ["수원","성남","용인","부천","안양","안산","평택","시흥","화성","오산","군포","의왕","하남","이천","안성","김포","여주","양평","과천","느티마을","무지개마을","분당","수지"];
+const GANGWON = ["강원","춘천","원주","강릉","속초","동해","삼척","홍천","횡성","영월","평창","정선","철원","화천","양구","인제","고성","양양","태백"];
+const CHUNGCHEONG = ["충청","청주","충주","제천","천안","아산","공주","보령","논산","계룡","당진","금산","부여","서천","청양","홍성","예산","태안","서산","오창","탕정"];
+const GYEONGSANG = ["경상","포항","경주","김천","안동","구미","영주","영천","상주","문경","경산","군위","의성","청송","영양","영덕","청도","고령","성주","칠곡","예천","봉화","울진","울릉","창원","진주","통영","사천","김해","밀양","의령","함안","창녕","남해","하동","산청","함양","거창","합천","양산"];
+const JEOLLA = ["전라","전주","군산","익산","정읍","남원","김제","완주","진안","무주","장수","임실","순창","고창","부안","목포","여수","순천","나주","광양","담양","곡성","구례","고흥","보성","화순","장흥","강진","해남","영암","무안","함평","영광","장성","완도","진도","신안","기자촌","에코시티","서신동"];
+const DAEJEON = ["대전"];
+const GWANGJU = ["광주"];
+const DAEGU = ["대구"];
+const BUSAN = ["부산"];
+const ULSAN = ["울산"];
+const JEJU = ["제주"];
+const GEOJE = ["거제"];
+
+function deriveRegion(name){
+  const n = name||"";
+  const test = (arr)=>arr.some(k=>n.includes(k));
+  if(test(DAEJEON)) return "대전";
+  if(test(GWANGJU)) return "광주";
+  if(test(DAEGU)) return "대구";
+  if(test(BUSAN)) return "부산";
+  if(test(ULSAN)) return "울산";
+  if(test(JEJU)) return "제주도";
+  if(test(GEOJE)) return "거제도";
+  if(test(INCHEON)) return "인천";
+  if(test(GG_NORTH)) return "경기북부";
+  if(test(GG_SOUTH)) return "경기남부";
+  if(test(GANGWON)) return "강원도";
+  if(test(CHUNGCHEONG)) return "충청도";
+  if(test(GYEONGSANG)) return "경상도";
+  if(test(JEOLLA)) return "전라도";
+  if(test(SEOUL_GU)) return "서울";
+  return "";
+}
+function deriveCategory(type, name){
+  const n = name||"";
+  if(type && BUILDING_CATEGORIES.includes(type) && type!=="미선택") return type;
+  if(n.includes("리모델링")) return "리모델링";
+  if(n.includes("데이터센터")||n.includes("데이터 센터")) return "데이터센터";
+  if(type==="하이테크") return "데이터센터";
+  if(type==="오피스텔") return "오피스텔";
+  if(type==="주상복합") return "주상복합";
+  if(type==="공동주택") return "공동주택";
+  if(type==="일반건축물"){
+    if(n.includes("기숙사")||n.includes("레지던스")) return "기타";
+    return "오피스";
+  }
+  if(n.includes("아파트")||n.includes("주택")||n.includes("재건축")||n.includes("재개발")||n.includes("공동주택")) return "공동주택";
+  if(n.includes("주상복합")) return "주상복합";
+  return "기타";
+}
+
+/* ---------------- 기본(기준) 데이터 ---------------- */
+const DEFAULT_ROWS = [
+["서울사업단","방배 신동아아파트 주택재건축정비사업 현장","","",null,null,null,"","",null,"","미발령 현장"],
+["서울사업단","서울 서소문 11-12지구 오피스 신축공사 현장","","E20259CA",138665.63,null,null,"8","36","2029-05-31","일반건축물","오피스 1개동, 대지면적 7,924.8㎡"],
+["서울사업단","서울 성수장미 주택재건축정비사업현장","","B90365CA",null,287,null,"3","20","2027-07-31","공동주택","아파트 3개동"],
+["서울사업단","서울 양평동 삼화인쇄 부지 오피스 신축공사현장","","E30367CA",null,null,null,"4","20","2027-02-16","일반건축물","업무시설/제2종근린생활시설, TOP-DOWN공법"],
+["서울사업단","세운재정비촉진지구 3-2,3구역 오피스 신축공사 현장","","E30339CA",170834.23,null,null,"9","35~36","2029-06-30","일반건축물","업무시설 2개동, 대지면적 10,575.1㎡"],
+["서울사업단","신반포18차 337동 주택재건축현장","","B90245CA",null,null,null,"","",  "2026-06-30","공동주택",""],
+["서울사업단","잠원 노블레스 아파트 리모델링 사업현장","","",4454.14,20,null,"2","10","2026-10-31","공동주택","공동주택 1개동, 대지면적 998.80㎡"],
+["서울사업단","서울 문래진주아파트 재건축정비사업현장","","E10128CA",56032.63,324,null,"3","21","2029-01-31","공동주택","부대복리시설 6개동, 대지면적 10,488.1㎡"],
+["서울사업단","신길 5동 지역주택조합 공동주택 신축공사현장","","E30380CA",309717.72,2054,null,"3","35","2029-07-31","공동주택","부대복리시설 16개동, 대지면적 62,482.1㎡"],
+["서울사업단","금세기빌딩 재개발사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["서울사업단","서울 한남동 730 시니어레지던스 현장","","E40274CA",39620.59,null,null,"5","7","2028-10-31","일반건축물","노인복지주택/근린생활시설/운동시설 3개동(111실)"],
+["서울사업단","서울 신당제8구역 주택재개발정비사업 현장","","",null,null,null,"","",null,"","미발령 현장"],
+["서울사업단","남서울종합시장 시장정비사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["경인사업단","고양 원당1구역 주택재개발정비사업현장","","B10170CA",227254,null,null,"3","35","2028-01-31","공동주택","부대시설 및 근린생활시설"],
+["경인사업단","구일역 지식산업센터 신축공사현장","","E30013CA",null,null,null,"4","13","2026-08-31","일반건축물","공장(지식산업센터 및 지원시설)"],
+["경인사업단","미추8구역 뉴스테이연계형 정비사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["경인사업단","상인천초교주변구역 주택재개발정비사업 현장","","B80140CA",null,2568,null,"4","35","2029-09-15","공동주택","24개동(당사분 12개동 1,174세대)"],
+["경인사업단","용현학익도시개발사업 업무복합2블록 신축공사현장","","",null,null,null,"","",null,"","미발령 현장"],
+["경인사업단","의정부 캠프 라과디아 공동주택 신축공사현장","","E00226CA",null,1401,null,"3","48","2027-10-31","공동주택","6개동, 복리시설 및 근린생활시설"],
+["경인사업단","고양 캐피탈랜드 데이터센터 SL3x 신축공사","","E20360CA",22026.2,null,null,"","","2027-12-31","하이테크","방송통신시설(데이터센터), IT Power 24MW"],
+["경인사업단","고양 풍동2지구 A3-1,2블록 공동주택 신축공사현장","3-1BL","E20039CA",null,229,null,"2","29","2028-02-20","공동주택","3개동 / 총계 7개동 526세대"],
+["경인사업단","고양 풍동2지구 A3-1,2블록 공동주택 신축공사현장","3-2BL","E20039CA",null,297,null,"2","29","2028-02-20","공동주택","4개동 / 총계 7개동 526세대"],
+["경인사업단","인천 검단신도시(AB22 BL) 공동주택 신축공사현장","","E50009CA",null,1454,null,"3","29","2029-12-31","공동주택","13개동"],
+["경인사업단","인천 검단신도시(AB23 BL) 공동주택 신축공사현장","","E50009CH",null,1403,null,"3","29","2029-12-31","공동주택","13개동"],
+["경인사업단","고양 문봉동 데이터센터 개발사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["경기사업단","가락현대5차 아파트 소규모 재건축정비 사업현장","","E00030CA",null,null,null,"","","2026-05-31","공동주택",""],
+["경기사업단","서울양원지구 모다이노칩 사옥 신축공사 현장","","E30331CA",null,null,null,"5","18","2027-11-30","일반건축물","지식산업센터/기숙사/근린생활시설"],
+["경기사업단","상봉터미널부지 주상복합 개발사업현장","","E20087CA",null,999,308,"8","46~49","2029-05-31","주상복합","공동주택 5개동, 오피스텔 1개동, 판매시설"],
+["경기사업단","미군 평택 차량정비시설 시설공사현장","","E00005CA",null,null,null,"","1~2","2026-03-20","일반건축물","24개동 및 주기장 포장"],
+["경기사업단","용인 다우 클라우드 데이터센터 신축공사","","E30356CA",36185,null,null,"2","6","2027-12-31","하이테크","데이터센터"],
+["경기사업단","속초 영랑공원 공동주택 신축공사현장","","E20382CA",null,1024,null,"4","33","2027-07-23","공동주택","아파트 8개동"],
+["경기사업단","오산 세교2지구 M1블록 민간임대 주상복합 신축공사현장","","E10484CA",132169,897,90,"4","44","2029-05-31","주상복합","아파트 6개동, 오피스텔 1개동, 판매시설"],
+["경기사업단","여주 홍문2지구 도시개발사업 공동주택 신축공사현장","","E40221CA",117494.99,696,null,"2","29","2029-02-28","공동주택","아파트 7개동"],
+["경기사업단","성남 금토지구 7-3BL 업무시설 신축공사현장","","E50052CA",76135,null,null,"5","9~10","2028-12-31","일반건축물","업무시설 및 근린생활시설 2개동"],
+["서부사업단","광양 마동 공동주택 신축공사현장","","E00552CA",null,925,null,"3","26~29","2026-12-31","공동주택","9개동"],
+["서부사업단","청주 오창 주상복합 신축공사","","E20148CA",null,644,225,"6","49","2027-07-31","주상복합","6개동 869세대, 의료시설, 판매시설"],
+["서부사업단","익산 중앙동 주상복합 신축공사 현장","","",null,null,null,"","",null,"","미발령 현장"],
+["서부사업단","전주 기자촌 주택재개발정비사업 현장","","E00407CA",null,2226,null,"3","25","2028-05-31","공동주택","28개동(1단지 1,138/2단지 1,088세대)"],
+["서부사업단","전주 서신동 감나무골 주택재정비사업현장","","B20076CA",null,1334,null,"3","20","2026-11-30","공동주택","20개동(전체 1,914세대 중 당사분)"],
+["서부사업단","전주 에코시티 16블럭 공동주택 신축공사현장","","B80211CA",null,576,null,"2","16~30","2026-12-31","공동주택","아파트 5개동"],
+["서부사업단","대전 도마변동 3구역 주택재개발정비사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["서부사업단","대전 관저28블럭 공동주택 신축공사현장","","B60455CA",null,951,null,"3","25","2029-05-31","공동주택","9개동"],
+["서부사업단","광주 양동3구역 주택재개발정비사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["경북사업단","대구 MBC부지 주상복합 개발사업현장","","E00058CA",null,null,null,"","","2026-01-31","주상복합",""],
+["경북사업단","대구 사일동 주상복합 신축공사현장","","E10013CA",null,299,56,"6","39","2026-08-31","주상복합","2개동, 판매시설"],
+["경북사업단","대구 본동 주상복합 신축공사현장","","",null,272,null,"4","44","2028-04-30","주상복합","2개동, 판매시설"],
+["경북사업단","포항 상생근린공원 민간공원조성 특례사업 공동주택 신축공사 1BL","","E00435CA",null,999,null,"3","35","2027-09-25","공동주택","7개동, 근린생활시설"],
+["경북사업단","대구 동인동 주상복합 신축공사현장","","E00565CA",null,314,66,"4","49","2028-03-31","주상복합","2개동 380세대"],
+["경북사업단","대구 노원2동 주택재개발정비사업현장","","E10219CA",null,1542,null,"2","30","2029-02-28","공동주택","12개동"],
+["경북사업단","안동 옥동 공동주택 신축공사현장","","",null,493,null,"3","20","2028-10-31","공동주택","7개동"],
+["경북사업단","포항 해도동 기숙사 건립사업 현장","","",null,null,null,"","",null,"","미발령 현장"],
+["경남사업단","김해 신문1지구 A7-1블록 공동주택 신축사업현장","","E20401CA",null,null,null,"","","2026-01-31","공동주택",""],
+["경남사업단","부산 당리승학 지역주택조합 공동주택 신축현장","","B70351CA",null,821,null,"4","29","2027-05-30","공동주택","아파트 8개동"],
+["경남사업단","부산 금정더샵 지역지택조합 공동주택현장","","B90346CA",null,994,null,"3","29","2026-12-01","공동주택","9개동(조합686/일반분양308세대)"],
+["경남사업단","울산 학성동 지역주택조합 공동주택 신축공사","","E30050CA",null,788,null,"3","21","2027-03-31","공동주택","13개동, 근린생활시설"],
+["경남사업단","부산 엄궁3구역 주택재개발 정비사업현장","","B70328CA",null,1305,null,"3","29","2027-06-30","공동주택","11개동"],
+["경남사업단","김해신문 1지구 도시개발사업 공동주택 2차 신축공사현장","","E30409CA",null,695,null,"2","29","2028-06-30","공동주택","6개동"],
+["경남사업단","문현마루지역주택조합 공동주택 신축공사현장","","B80446CA",null,804,null,"4","23~35","2028-12-31","공동주택","6개동"],
+["경남사업단","제주 연동 주상복합 신축공사현장","","",null,null,null,"","",null,"","미발령 현장"],
+["경남사업단","양산사송지구 민간참여 공공주택지구 공동사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["리모델링사업단","느티마을3단지 리모델링사업현장","","B40360CA",null,873,null,"3","28","2027-07-31","공동주택","12개동(리모델링770/신축103세대)"],
+["리모델링사업단","느티마을4단지 리모델링사업현장","","B80270CA",null,1149,null,"4","26","2027-09-30","공동주택","17개동(신축143세대 포함)"],
+["리모델링사업단","무지개마을 4단지 리모델링사업현장","","B50609CA",null,647,null,"3","26","2027-01-31","공동주택","신축84세대 포함"],
+["리모델링사업단","광장상록타워아파트 리모델링사업현장","","E40076CA",null,229,null,"5","24","2030-03-31","공동주택","1개동(신축29세대 포함)"],
+["리모델링사업단","분당 한솔5단지아파트 리모델링사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["리모델링사업단","용인 수지 보원아파트 리모델링사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["리모델링사업단","용인 수지 초입마을 아파트 리모델링사업현장","","",null,null,null,"","",null,"","미발령 현장"],
+["아산탕정프로젝트","아산탕정지구 3BL 공동주택","","E20478CA",null,1214,null,"2","35","2027-02-28","공동주택","9개동"],
+["아산탕정프로젝트","아산탕정지구 4BL 공동주택","","E30250CA",null,1140,null,"2","35","2026-12-15","공동주택","8개동"],
+["아산탕정프로젝트","아산탕정지구 2BL 공동주택","","E40219CA",null,1163,null,"2","35","2027-10-03","공동주택","9개동"],
+["서리풀프로젝트","서리풀 업무복합시설 개발사업현장 (남측)","","E50186CA",482277,null,null,"7","19","2030-02-28","일반건축물","업무시설 4개동, 공연장"],
+["서리풀프로젝트","서리풀 업무복합시설 개발사업현장 (북측)","","E50186CH",98289,null,null,"4","7","2029-09-20","일반건축물","업무시설 1개동, 수장고 별도"],
+["송도G5블록프로젝트","송도 G5 1BL 주상복합 신축공사 현장","","",null,853,null,"2","31","2029-08-13","공동주택","아파트 7개동"],
+["송도G5블록프로젝트","송도 G5 11BL 주상복합 신축공사 현장","","",null,318,null,"2","20","2029-08-13","공동주택","아파트 4개동"],
+["송도G5블록프로젝트","송도 G5 3,4BL 주상복합 신축공사 현장","3BL","",null,85,24,"2","41","2029-08-13","주상복합","1개동"],
+["송도G5블록프로젝트","송도 G5 3,4BL 주상복합 신축공사 현장","4BL","",null,91,24,"2","43","2029-08-13","주상복합","1개동"],
+["송도G5블록프로젝트","송도 G5 5,6BL 주상복합 신축공사 현장","5BL","",null,97,24,"2","45","2029-08-13","주상복합","1개동"],
+["송도G5블록프로젝트","송도 G5 5,6BL 주상복합 신축공사 현장","6BL","",null,100,24,"2","46","2029-08-13","주상복합","1개동"],
+["PGC프로젝트","PGC 본관 건립사업 현장","","",null,null,null,"","",null,"일반건축물","현장코드/일정 미확정"],
+["PGC프로젝트","PGC 사택 건립사업 현장","","E50062CA",null,null,210,"4","16","2028-08-31","오피스텔","오피스텔 210세대+근린생활시설"],
+];
+
+function rowToObj(r){
+  const [division,name,block,code,area,apt,officetel,floorB,floorG,date,type,note] = r;
+  const areaM2 = (area===null||area===undefined||area==="") ? null : Number(area);
+  const areaPyeong = areaM2===null ? null : Math.round(areaM2/PYEONG);
+  return {
+    division: division||"", name: name||"", block: block||"", code: code||"",
+    area: areaPyeong,
+    apt: (apt===null||apt===undefined||apt==="")?null:Number(apt),
+    officetel: (officetel===null||officetel===undefined||officetel==="")?null:Number(officetel),
+    floorB: floorB||"", floorG: floorG||"",
+    date: date||"", type: type||"", note: note||"",
+    category: deriveCategory(type,name),
+    region: deriveRegion(name),
+  };
+}
+const DEFAULT_DATA = DEFAULT_ROWS.map(rowToObj);
+
+/* ---------------- 상태 ---------------- */
+let baseline = null; // {updatedAt, rows:[...]}
+let baselineIsFallback = false; // true = 저장소를 못 읽어 임시로 기본값을 띄운 상태 (이 상태에서는 저장소를 덮어쓰지 않는다)
+let activeTab = 'search';
+let searchResults = null; // null = 아직 조회 안함
+let filters = { name:"", cat:"미선택", areaLabel:"미선택", apt:"", off:"", region:"미선택", completionYear:"미선택" }; // 마지막 검색 조건 유지
+let pendingUpload = null; // 업로드 파싱 결과
+let editUnlocked = false;   // 비밀번호 통과 여부
+let editMode = false;       // 표 수정 모드 여부
+let editRows = null;        // 수정 중인 임시 데이터
+let showPwForm = false;     // 비밀번호 입력폼 표시 여부
+let showUploadPwForm = false; // 업로드용 비밀번호 입력폼 표시 여부
+let connectedFileHandle = null; // 연결된 로컬/공유 파일 핸들 (File System Access API)
+let connectedFileName = "";
+const FS_ACCESS_OK = (typeof window !== 'undefined') && 'showOpenFilePicker' in window && 'showSaveFilePicker' in window;
+const EDIT_PASSWORD = "1234";
+const TYPE_OPTIONS = ["","공동주택","주상복합","오피스텔","일반건축물","하이테크"];
+
+/* ---------------- 저장소 (window.storage 우선, 사용 불가 시 localStorage로 자동 전환) ---------------- */
+const STORAGE_TIMEOUT_MS = 8000;   // 최초 불러오기용 (느린 응답을 '데이터 없음'으로 오해하지 않도록 넉넉히)
+const SAVE_TIMEOUT_MS = 15000;     // 저장용 (끊기지 않고 끝까지 기다림)
+const REMOTE_STORAGE_OK = (typeof window !== 'undefined') && window.storage && typeof window.storage.get === 'function' && typeof window.storage.set === 'function';
+
+function withTimeout(promise, ms){
+  return new Promise((resolve, reject)=>{
+    const timer = setTimeout(()=>reject(new Error('storage-timeout')), ms);
+    Promise.resolve(promise).then(v=>{ clearTimeout(timer); resolve(v); }, e=>{ clearTimeout(timer); reject(e); });
+  });
+}
+
+// 반환: {status:'found', value} | {status:'empty'} | {status:'error'}
+// 핵심: 응답 지연/오류('error')와 '진짜로 데이터가 없음'('empty')을 반드시 구분한다.
+async function storageGet(key){
+  let localRaw = null;
+  try{ localRaw = localStorage.getItem(key); }catch(e){ localRaw = null; }
+
+  if(REMOTE_STORAGE_OK){
+    try{
+      const res = await withTimeout(window.storage.get(key, false), STORAGE_TIMEOUT_MS);
+      if(res && res.value!=null && res.value!=='') return {status:'found', value:res.value};
+      // 원격은 정상 응답했지만 키가 없음 -> 혹시 로컬에 있으면 그것을 사용
+      if(localRaw!==null) return {status:'found', value:localRaw};
+      return {status:'empty'};
+    }catch(e){
+      // 원격 실패/지연 -> 로컬 백업이 있으면 사용, 없으면 '오류'로 처리(절대 empty로 취급하지 않음)
+      if(localRaw!==null) return {status:'found', value:localRaw};
+      return {status:'error'};
+    }
+  }
+  if(localRaw!==null) return {status:'found', value:localRaw};
+  return {status:'empty'};
+}
+
+async function storageSet(key, value){
+  try{ localStorage.setItem(key, value); }catch(e){ /* 용량 초과 등은 무시 */ }
+  if(REMOTE_STORAGE_OK){
+    await withTimeout(window.storage.set(key, value, false), SAVE_TIMEOUT_MS);
+  }
+  return true;
+}
+
+async function loadBaseline(){
+  const res = await storageGet('baseline_sites');
+
+  if(res.status === 'found'){
+    try{
+      baseline = JSON.parse(res.value);
+      baselineIsFallback = false;
+      if(baseline.unit !== 'pyeong'){
+        // 예전에 ㎡ 단위로 저장된 기준파일 -> 평 단위로 1회 자동 변환
+        baseline.rows = (baseline.rows||[]).map(r=>({
+          ...r,
+          area: (r.area===null||r.area===undefined) ? null : Math.round(Number(r.area)/PYEONG)
+        }));
+        baseline.unit = 'pyeong';
+        baseline.updatedAt = new Date().toISOString();
+        saveBaseline().catch(()=>{});
+      }
+      return;
+    }catch(e){ /* 저장된 값이 깨져 있으면 아래 오류 처리로 */ }
+    // 파싱 실패 -> 데이터를 덮어쓰지 않고 임시 기본값만 메모리에 표시
+    baseline = {updatedAt: new Date().toISOString(), unit:'pyeong', rows: DEFAULT_DATA};
+    baselineIsFallback = true;
+    return;
+  }
+
+  if(res.status === 'empty'){
+    // 진짜로 저장된 데이터가 없을 때만 기본값을 저장한다 (덮어쓸 데이터가 없으므로 안전)
+    baseline = {updatedAt: new Date().toISOString(), unit:'pyeong', rows: DEFAULT_DATA};
+    baselineIsFallback = false;
+    saveBaseline().catch(()=>{});
+    return;
+  }
+
+  // status === 'error' : 응답 지연·오류 등 -> 기본값은 '화면 표시용'으로만 쓰고 절대 저장하지 않는다.
+  // (이렇게 해야 잠깐의 읽기 실패가 저장된 기준파일을 기본값으로 덮어써 날려버리는 사고를 막는다)
+  baseline = {updatedAt: new Date().toISOString(), unit:'pyeong', rows: DEFAULT_DATA};
+  baselineIsFallback = true;
+}
+// 성공하면 true, 실패하면 false를 반환한다 (호출부에서 실패 시 재시도할 수 있도록)
+async function saveBaseline(){
+  let ok = true;
+  try{
+    await storageSet('baseline_sites', JSON.stringify(baseline));
+  }catch(e){
+    console.error('저장 실패', e);
+    ok = false;
+  }
+  if(connectedFileHandle){
+    const fileOk = await writeToConnectedFile();
+    if(!fileOk) ok = false;
+  }
+  return ok;
+}
+
+/* ---------------- 공유 파일 연결 (File System Access API) ---------------- */
+async function connectExistingFile(){
+  if(!FS_ACCESS_OK){ showToast('이 브라우저에서는 파일 연결 기능을 지원하지 않아요. 최신 Chrome/Edge를 사용해주세요.'); return; }
+  try{
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'JSON 기준파일', accept: {'application/json': ['.json']} }]
+    });
+    const perm = await handle.requestPermission({mode:'readwrite'});
+    if(perm !== 'granted'){ showToast('파일 접근 권한이 필요합니다.'); return; }
+    const file = await handle.getFile();
+    const text = await file.text();
+    if(text && text.trim()){
+      try{
+        const parsed = JSON.parse(text);
+        baseline = parsed;
+        if(baseline.unit !== 'pyeong'){
+          baseline.rows = (baseline.rows||[]).map(r=>({...r, area: (r.area===null||r.area===undefined)?null:Math.round(Number(r.area)/PYEONG)}));
+          baseline.unit = 'pyeong';
+        }
+      }catch(e){ showToast('파일 내용을 읽을 수 없습니다. 형식을 확인해주세요.'); return; }
+    }
+    connectedFileHandle = handle;
+    connectedFileName = handle.name;
+    showToast(`"${connectedFileName}" 파일에 연결했습니다.`);
+    renderBaselineTab();
+  }catch(e){
+    if(e.name !== 'AbortError') showToast('파일을 여는 중 오류가 발생했습니다.');
+  }
+}
+
+async function createNewSharedFile(){
+  if(!FS_ACCESS_OK){ showToast('이 브라우저에서는 파일 연결 기능을 지원하지 않아요. 최신 Chrome/Edge를 사용해주세요.'); return; }
+  try{
+    const handle = await window.showSaveFilePicker({
+      suggestedName: '기준파일.json',
+      types: [{ description: 'JSON 기준파일', accept: {'application/json': ['.json']} }]
+    });
+    connectedFileHandle = handle;
+    connectedFileName = handle.name;
+    const ok = await writeToConnectedFile();
+    if(ok) showToast(`"${connectedFileName}" 파일을 새로 만들어 연결했습니다.`);
+    renderBaselineTab();
+  }catch(e){
+    if(e.name !== 'AbortError') showToast('파일을 만드는 중 오류가 발생했습니다.');
+  }
+}
+
+async function writeToConnectedFile(){
+  if(!connectedFileHandle) return false;
+  try{
+    const perm = await connectedFileHandle.requestPermission({mode:'readwrite'});
+    if(perm !== 'granted'){ showToast('파일 쓰기 권한이 거부되었습니다.'); return false; }
+    const writable = await connectedFileHandle.createWritable();
+    await writable.write(JSON.stringify(baseline));
+    await writable.close();
+    return true;
+  }catch(e){
+    console.error(e);
+    showToast('연결된 파일에 저장하지 못했습니다.');
+    return false;
+  }
+}
+
+async function refreshFromConnectedFile(){
+  if(!connectedFileHandle){ showToast('연결된 공유 파일이 없습니다.'); return; }
+  try{
+    const perm = await connectedFileHandle.requestPermission({mode:'read'});
+    if(perm !== 'granted'){ showToast('파일 읽기 권한이 필요합니다.'); return; }
+    const file = await connectedFileHandle.getFile();
+    const text = await file.text();
+    if(text && text.trim()){
+      baseline = JSON.parse(text);
+      showToast('연결된 파일에서 최신 내용을 불러왔습니다.');
+      renderBaselineTab();
+    }
+  }catch(e){
+    showToast('파일을 다시 읽는 중 오류가 발생했습니다.');
+  }
+}
+
+function disconnectFile(){
+  connectedFileHandle = null;
+  connectedFileName = "";
+  showToast('공유 파일 연결을 해제했습니다.');
+  renderBaselineTab();
+}
+
+/* ---------------- 유틸 ---------------- */
+function fmtNum(n){ return n===null||n===undefined ? null : Number(n).toLocaleString('ko-KR'); }
+function toPyeong(m2){ return m2===null||m2===undefined ? null : m2/PYEONG; }
+function areaDisplay(areaPyeong){
+  if(areaPyeong===null||areaPyeong===undefined) return "-";
+  return `${fmtNum(areaPyeong)}평`;
+}
+function unitsDisplay(row){
+  const parts=[];
+  if(row.apt!==null) parts.push(`아파트 ${fmtNum(row.apt)}세대`);
+  if(row.officetel!==null) parts.push(`오피스텔 ${fmtNum(row.officetel)}세대`);
+  return parts.length? parts.join(' / ') : "-";
+}
+function floorDisplay(row){
+  if(!row.floorB && !row.floorG) return "-";
+  const b = row.floorB? `지하${row.floorB}층` : "";
+  const g = row.floorG? `지상${row.floorG}층` : "";
+  return [b,g].filter(Boolean).join(" ~ ");
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function esc(s){ return (s===null||s===undefined)?"":String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ---------------- 렌더 ---------------- */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="wrap">
+      <div class="eyebrow"><span class="dot"></span>유사현장 검색 AI</div>
+      <div class="title-row">
+        <h1>유사현장 LIST</h1>
+        <span class="title-sub">&nbsp;건물종류 · 연면적 · 세대수 · 지역 기준 검색</span>
+      </div>
+      <div class="tabs">
+        <div class="tab ${activeTab==='search'?'active':''}" data-tab="search">현장 검색</div>
+        <div class="tab ${activeTab==='baseline'?'active':''}" data-tab="baseline">기준파일 관리</div>
+      </div>
+      <div id="tab-content"></div>
+    </div>
+    <div class="toast" id="toast"></div>
+  `;
+  document.querySelectorAll('.tab').forEach(el=>{
+    el.addEventListener('click', ()=>{ activeTab = el.dataset.tab; render(); });
+  });
+  if(activeTab==='search') renderSearchTab(); else renderBaselineTab();
+}
+
+function renderSearchTab(){
+  const c = document.getElementById('tab-content');
+  c.innerHTML = `
+    <div class="banner">💡 선택한 조건에 맞는 현장을 기준파일에서 찾아 보여줍니다. 세대수는 입력한 값과 가장 가까운 현장 순으로 자동 정렬됩니다.</div>
+    <div class="card">
+      <h3>검색 조건</h3>
+      <div class="grid">
+        <div class="field">
+          <label>현장명</label>
+          <input type="text" id="f-name" placeholder="현장명을 입력하세요 (비워두면 전체)" value="${esc(filters.name)}">
+        </div>
+        <div class="field">
+          <label>건물종류</label>
+          <select id="f-cat">${BUILDING_CATEGORIES.map(v=>`<option value="${v}" ${v===filters.cat?'selected':''}>${v}</option>`).join('')}</select>
+        </div>
+        <div class="field">
+          <label>연면적</label>
+          <select id="f-area">${AREA_RANGES.map(v=>`<option value="${v.label}" ${v.label===filters.areaLabel?'selected':''}>${v.label}</option>`).join('')}</select>
+        </div>
+        <div class="field">
+          <label>세대수 (아파트)</label>
+          <div class="stepper">
+            <button type="button" data-step="-1" data-target="f-apt">−</button>
+            <input type="text" inputmode="numeric" id="f-apt" placeholder="입력" value="${esc(filters.apt)}">
+            <button type="button" data-step="1" data-target="f-apt">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>세대수 (오피스텔)</label>
+          <div class="stepper">
+            <button type="button" data-step="-1" data-target="f-off">−</button>
+            <input type="text" inputmode="numeric" id="f-off" placeholder="입력" value="${esc(filters.off)}">
+            <button type="button" data-step="1" data-target="f-off">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>지역</label>
+          <select id="f-region">${REGIONS.map(v=>`<option value="${v}" ${v===filters.region?'selected':''}>${v}</option>`).join('')}</select>
+        </div>
+        <div class="field">
+          <label>준공시점</label>
+          <select id="f-year">${COMPLETION_YEAR_OPTIONS.map(v=>`<option value="${v}" ${v===filters.completionYear?'selected':''}>${v==="미선택"?"미선택":v+"년"}</option>`).join('')}</select>
+        </div>
+      </div>
+    </div>
+    <div class="actionbar">
+      <div class="result-count">${searchResults===null? '조건을 선택한 뒤 조회를 시작하세요' : `조회 결과 <b>${searchResults.length}건</b>`}</div>
+      <div class="btns">
+        <button class="btn ghost" id="btn-reset">필터 초기화</button>
+        <button class="btn primary big" id="btn-run">조회 시작</button>
+        <button class="btn ghost" id="btn-export" ${(!searchResults||!searchResults.length)?'disabled':''}>결과 엑셀 다운로드</button>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <div class="scrollx">
+      <table>
+        <thead><tr>
+          <th>순위</th><th>현장코드</th><th>현장명</th><th>건물종류</th><th>연면적</th><th>세대수</th><th>지역</th><th>준공예정일자</th><th>비고</th>
+        </tr></thead>
+        <tbody id="result-body"></tbody>
+      </table>
+      </div>
+      ${searchResults===null ? `
+        <div class="empty-state"><b>조회 시작을 눌러 검색해보세요</b><br><span class="sub">현장명 / 건물종류 / 연면적 / 세대수 / 지역 조건으로 기준파일에서 찾아드립니다</span></div>
+      ` : (searchResults.length===0 ? `
+        <div class="empty-state"><b>조건에 맞는 현장이 없습니다</b><br><span class="sub">필터를 완화하거나 초기화한 뒤 다시 시도해보세요</span></div>
+      ` : '')}
+    </div>
+  `;
+
+  document.querySelectorAll('.stepper button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const input = document.getElementById(btn.dataset.target);
+      const cur = parseInt(input.value||"0",10) || 0;
+      const next = Math.max(0, cur + parseInt(btn.dataset.step,10));
+      input.value = next;
+    });
+  });
+  document.getElementById('btn-reset').addEventListener('click', ()=>{
+    filters = { name:"", cat:"미선택", areaLabel:"미선택", apt:"", off:"", region:"미선택", completionYear:"미선택" };
+    searchResults=null; renderSearchTab();
+  });
+  document.getElementById('btn-run').addEventListener('click', runSearch);
+  const exportBtn = document.getElementById('btn-export');
+  if(exportBtn) exportBtn.addEventListener('click', exportResults);
+
+  if(searchResults && searchResults.length) renderResultRows();
+}
+
+function renderResultRows(){
+  const tbody = document.getElementById('result-body');
+  tbody.innerHTML = searchResults.map((row,i)=>`
+    <tr>
+      <td class="rank">${i+1}</td>
+      <td>${esc(row.code)||'-'}</td>
+      <td>${esc(row.name)}${row.block?` <span class="badge">${esc(row.block)}</span>`:''}</td>
+      <td>${row.category?`<span class="badge">${esc(row.category)}</span>`:'-'}</td>
+      <td class="num">${areaDisplay(row.area)}</td>
+      <td class="num">${unitsDisplay(row)}</td>
+      <td>${row.region||'-'}</td>
+      <td>${row.date||'-'}</td>
+      <td>${esc(row.note)||'-'}</td>
+    </tr>
+  `).join('');
+}
+
+function runSearch(){
+  filters.name = document.getElementById('f-name').value.trim();
+  filters.cat = document.getElementById('f-cat').value;
+  filters.areaLabel = document.getElementById('f-area').value;
+  filters.apt = document.getElementById('f-apt').value.trim();
+  filters.off = document.getElementById('f-off').value.trim();
+  filters.region = document.getElementById('f-region').value;
+  filters.completionYear = document.getElementById('f-year').value;
+
+  const name = filters.name.toLowerCase();
+  const cat = filters.cat;
+  const areaLabel = filters.areaLabel;
+  const aptRaw = filters.apt;
+  const offRaw = filters.off;
+  const region = filters.region;
+  const completionYear = filters.completionYear;
+  const aptVal = aptRaw===""? null : Number(aptRaw);
+  const offVal = offRaw===""? null : Number(offRaw);
+  const areaRange = AREA_RANGES.find(a=>a.label===areaLabel);
+
+  let rows = baseline.rows.slice();
+
+  if(name) rows = rows.filter(r => r.name.toLowerCase().includes(name));
+  if(cat && cat!=="미선택") rows = rows.filter(r => r.category === cat);
+  if(region && region!=="미선택") rows = rows.filter(r => r.region === region);
+  if(completionYear && completionYear!=="미선택"){
+    rows = rows.filter(r => r.date && r.date.slice(0,4) === completionYear);
+  }
+  if(areaRange && areaRange.min!==null){
+    rows = rows.filter(r => {
+      if(r.area===null) return false;
+      return r.area >= areaRange.min && r.area <= areaRange.max;
+    });
+  }
+
+  if(aptVal!==null || offVal!==null){
+    rows = rows.map(r=>{
+      let score = 0;
+      if(aptVal!==null) score += (r.apt===null) ? 1e6 : Math.abs(r.apt - aptVal);
+      if(offVal!==null) score += (r.officetel===null) ? 1e6 : Math.abs(r.officetel - offVal);
+      return {row:r, score};
+    }).sort((a,b)=>a.score-b.score).map(x=>x.row);
+  }
+
+  searchResults = rows;
+  renderSearchTab();
+}
+
+async function exportResults(){
+  if(!searchResults || !searchResults.length) return;
+  showToast('엑셀 파일을 준비하는 중...');
+  try{ await ensureXLSX(); }catch(e){ showToast('엑셀 기능을 불러오지 못했습니다. 네트워크를 확인해주세요.'); return; }
+  const data = searchResults.map((r,i)=>({
+    "순위": i+1,
+    "현장코드": r.code||"",
+    "현장명": r.name + (r.block? ` (${r.block})`:""),
+    "건물종류": r.category||"",
+    "연면적(평)": r.area===null? "" : r.area,
+    "아파트세대수": r.apt===null? "" : r.apt,
+    "오피스텔세대수": r.officetel===null? "" : r.officetel,
+    "지역": r.region||"",
+    "준공예정일자": r.date||"",
+    "비고": r.note||"",
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{wch:6},{wch:12},{wch:38},{wch:10},{wch:12},{wch:12},{wch:12},{wch:10},{wch:14},{wch:40}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "검색결과");
+  const d = new Date();
+  const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb, `유사현장_검색결과_${stamp}.xlsx`);
+}
+
+async function refreshBaseline(){
+  showToast('최신 데이터를 불러오는 중...');
+  await loadBaseline();
+  showToast('최신 데이터로 갱신했습니다.');
+  renderBaselineTab();
+}
+
+/* ---------------- 기준파일 관리 탭 ---------------- */
+function renderBaselineTab(){
+  const c = document.getElementById('tab-content');
+  const rows = baseline.rows;
+  const updated = new Date(baseline.updatedAt);
+
+  const lockRowHtml = editMode ? `
+      <span class="badge-edit">✎ 수정 모드</span>
+      <span class="file-hint">표의 각 칸을 직접 눌러 값을 고친 뒤 저장하세요.</span>
+  ` : (showPwForm ? `
+      <div class="pw-form">
+        <input type="password" id="pw-input" placeholder="비밀번호 4자리" maxlength="8">
+        <button class="btn primary" id="btn-pw-confirm">확인</button>
+        <button class="btn ghost" id="btn-pw-cancel">취소</button>
+      </div>
+  ` : `
+      <button class="btn ghost" id="btn-lock">비밀번호 입력 후 수정</button>
+  `);
+
+  const uploadControlHtml = editMode ? `<button class="btn ghost" disabled>엑셀 업로드</button>` : (showUploadPwForm ? `
+      <div class="pw-form">
+        <input type="password" id="upload-pw-input" placeholder="비밀번호 4자리" maxlength="8">
+        <button class="btn primary" id="btn-upload-pw-confirm">확인</button>
+        <button class="btn ghost" id="btn-upload-pw-cancel">취소</button>
+      </div>
+  ` : `<button class="btn ghost" id="btn-upload-trigger">엑셀 업로드</button>`);
+
+  const fallbackWarnHtml = baselineIsFallback ? `
+    <div class="banner" style="background:#fdecec;border-color:#f5b5b5;color:#b3261e;">
+      ⚠️ 저장된 기준파일을 불러오지 못해 <b>임시로 기본 데이터를 표시</b>하고 있어요. 지금 상태에서 업로드·저장하면 실제 데이터를 덮어쓸 수 있으니, 먼저 아래 <b>↻ 새로고침</b>을 눌러 원래 데이터가 돌아오는지 확인하세요.
+    </div>` : '';
+
+  c.innerHTML = `
+    ${fallbackWarnHtml}
+    <div class="banner">💡 이 파일이 검색의 기준이 됩니다. 엑셀로 내려받아 수정한 뒤 다시 업로드하면 현장을 추가하거나 기존 현장 정보를 갱신할 수 있어요. (같은 현장코드/현장명이 있으면 내용을 덮어쓰고, 없으면 새 현장으로 추가됩니다) 표를 직접 고치고 싶다면 비밀번호를 입력해 수정 모드로 전환하세요.</div>
+    <div class="card">
+      <h3>기준파일</h3>
+      <div class="meta-line">현재 등록된 현장 <b>${rows.length}건</b> · 마지막 업데이트 ${updated.toLocaleString('ko-KR')}
+        <button class="btn ghost" id="btn-refresh-baseline" style="padding:3px 10px;font-size:12px;margin-left:6px;">↻ 새로고침</button>
+      </div>
+      <div class="file-row">
+        <button class="btn primary" id="btn-download-baseline">기준파일 엑셀 다운로드</button>
+        ${uploadControlHtml}
+        <input type="file" id="file-input" accept=".xlsx,.xls">
+        <span class="file-hint">업로드 파일은 다운로드한 기준파일과 같은 열 구성이어야 합니다. (업로드에는 비밀번호가 필요해요)</span>
+      </div>
+      <div class="upload-preview" id="upload-preview"></div>
+      <div class="lock-row" style="margin-top:14px;">${lockRowHtml}</div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">📁 공유 파일 연결 (선택)</div>
+        <div class="file-hint" style="margin-bottom:8px;">
+          내 컴퓨터나 회사 공유 폴더의 파일에 직접 저장할 수 있어요. 팀원들이 같은 공유 폴더의 파일에 연결하면, 서로 저장한 내용이 그 파일을 통해 공유됩니다. (인터넷·로그인 필요 없음, 최신 Chrome/Edge 필요)
+        </div>
+        ${connectedFileHandle ? `
+          <div class="lock-row">
+            <span class="badge" style="background:#e7f6ec;color:#1e9e63;">🔗 연결됨: ${esc(connectedFileName)}</span>
+            <button class="btn ghost" id="btn-file-refresh" style="padding:6px 12px;font-size:12.5px;">↻ 파일에서 새로고침</button>
+            <button class="btn danger" id="btn-file-disconnect" style="padding:6px 12px;font-size:12.5px;">연결 해제</button>
+          </div>
+        ` : `
+          <div class="lock-row">
+            <button class="btn ghost" id="btn-file-open">기존 공유 파일 열기</button>
+            <button class="btn ghost" id="btn-file-new">새 공유 파일 만들기</button>
+            ${!FS_ACCESS_OK ? '<span class="file-hint" style="color:var(--danger);">이 브라우저/환경에서는 지원되지 않아요.</span>' : ''}
+          </div>
+        `}
+      </div>
+    </div>
+    <div class="tablewrap">
+      <div class="scrollx" style="max-height:520px;overflow-y:auto;">
+      <table>
+        <thead><tr>
+          <th>사업단</th><th>현장명</th><th>블록</th><th>현장코드</th><th>연면적(평)</th><th>아파트</th><th>오피스텔</th><th>지하</th><th>지상</th><th>준공일자</th><th>건축물유형</th><th>비고</th>${editMode?'<th>삭제</th>':''}
+        </tr></thead>
+        <tbody id="baseline-body"></tbody>
+      </table>
+      </div>
+      ${editMode ? `
+      <div style="padding:12px 14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <button class="btn ghost" id="btn-add-row">+ 새 현장 행 추가</button>
+        <div class="btns">
+          <button class="btn ghost" id="btn-cancel-edit">취소</button>
+          <button class="btn primary" id="btn-save-edit">저장</button>
+        </div>
+      </div>` : ''}
+    </div>
+  `;
+
+  document.getElementById('btn-download-baseline').addEventListener('click', downloadBaseline);
+  document.getElementById('btn-refresh-baseline').addEventListener('click', refreshBaseline);
+  if(connectedFileHandle){
+    document.getElementById('btn-file-refresh').addEventListener('click', refreshFromConnectedFile);
+    document.getElementById('btn-file-disconnect').addEventListener('click', disconnectFile);
+  }else{
+    document.getElementById('btn-file-open').addEventListener('click', connectExistingFile);
+    document.getElementById('btn-file-new').addEventListener('click', createNewSharedFile);
+  }
+  if(!editMode){
+    document.getElementById('file-input').addEventListener('change', handleUpload);
+    if(showUploadPwForm){
+      const upwInput = document.getElementById('upload-pw-input');
+      upwInput.focus();
+      upwInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryUploadPassword(); });
+      document.getElementById('btn-upload-pw-confirm').addEventListener('click', tryUploadPassword);
+      document.getElementById('btn-upload-pw-cancel').addEventListener('click', ()=>{ showUploadPwForm=false; renderBaselineTab(); });
+    }else{
+      document.getElementById('btn-upload-trigger').addEventListener('click', ()=>{ showUploadPwForm=true; renderBaselineTab(); });
+    }
+  }
+
+  if(editMode){
+    renderEditableBody();
+    document.getElementById('btn-add-row').addEventListener('click', addBlankEditRow);
+    document.getElementById('btn-cancel-edit').addEventListener('click', cancelEdit);
+    document.getElementById('btn-save-edit').addEventListener('click', saveEdit);
+  }else{
+    renderReadOnlyBody(rows);
+    if(showPwForm){
+      const pwInput = document.getElementById('pw-input');
+      pwInput.focus();
+      pwInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryPassword(); });
+      document.getElementById('btn-pw-confirm').addEventListener('click', tryPassword);
+      document.getElementById('btn-pw-cancel').addEventListener('click', ()=>{ showPwForm=false; renderBaselineTab(); });
+    }else{
+      document.getElementById('btn-lock').addEventListener('click', ()=>{ showPwForm=true; renderBaselineTab(); });
+    }
+  }
+}
+
+function renderReadOnlyBody(rows){
+  const tbody = document.getElementById('baseline-body');
+  tbody.innerHTML = rows.map(r=>`<tr>
+    <td>${esc(r.division)}</td>
+    <td><span class="name-cell" title="클릭하여 펼치기/접기">${esc(r.name)}</span></td>
+    <td>${esc(r.block)}</td>
+    <td>${esc(r.code)}</td>
+    <td class="num">${r.area===null?'-':fmtNum(r.area)}</td>
+    <td class="num">${r.apt===null?'-':fmtNum(r.apt)}</td>
+    <td class="num">${r.officetel===null?'-':fmtNum(r.officetel)}</td>
+    <td class="num">${esc(r.floorB)||'-'}</td>
+    <td class="num">${esc(r.floorG)||'-'}</td>
+    <td>${esc(r.date)||'-'}</td>
+    <td>${r.category?`<span class="badge">${esc(r.category)}</span>`:'-'}</td>
+    <td>${esc(r.note)||'-'}</td>
+  </tr>`).join('');
+
+  tbody.querySelectorAll('.name-cell').forEach(el=>{
+    el.addEventListener('click', ()=> el.classList.toggle('expanded'));
+  });
+}
+
+function tryPassword(){
+  const val = document.getElementById('pw-input').value;
+  if(val === EDIT_PASSWORD){
+    editUnlocked = true;
+    editMode = true;
+    showPwForm = false;
+    editRows = baseline.rows.map(r=>({...r}));
+    renderBaselineTab();
+  }else{
+    showToast('비밀번호가 올바르지 않습니다.');
+  }
+}
+
+function tryUploadPassword(){
+  const val = document.getElementById('upload-pw-input').value;
+  if(val === EDIT_PASSWORD){
+    showUploadPwForm = false;
+    renderBaselineTab();
+    setTimeout(()=>{ const fi = document.getElementById('file-input'); if(fi) fi.click(); }, 0);
+  }else{
+    showToast('비밀번호가 올바르지 않습니다.');
+  }
+}
+
+function fieldInput(idx, field, value, type){
+  const v = value===null||value===undefined ? "" : value;
+  if(field==='type'){
+    const opts = BUILDING_CATEGORIES.filter(o=>o!=="미선택");
+    return `<select class="edit-cell-input" data-idx="${idx}" data-field="type">
+      <option value="" ${v===""?'selected':''}>(미지정)</option>
+      ${opts.map(o=>`<option value="${o}" ${o===v?'selected':''}>${o}</option>`).join('')}
+    </select>`;
+  }
+  const inputmode = type==='num' ? 'numeric' : 'text';
+  return `<input class="edit-cell-input" data-idx="${idx}" data-field="${field}" type="text" inputmode="${inputmode}" value="${esc(v)}">`;
+}
+
+function renderEditableBody(){
+  const tbody = document.getElementById('baseline-body');
+  tbody.innerHTML = editRows.map((r,idx)=>`<tr class="editing">
+    <td class="edit-cell">${fieldInput(idx,'division',r.division)}</td>
+    <td class="edit-cell">${fieldInput(idx,'name',r.name)}</td>
+    <td class="edit-cell">${fieldInput(idx,'block',r.block)}</td>
+    <td class="edit-cell">${fieldInput(idx,'code',r.code)}</td>
+    <td class="edit-cell">${fieldInput(idx,'area',r.area,'num')}</td>
+    <td class="edit-cell">${fieldInput(idx,'apt',r.apt,'num')}</td>
+    <td class="edit-cell">${fieldInput(idx,'officetel',r.officetel,'num')}</td>
+    <td class="edit-cell">${fieldInput(idx,'floorB',r.floorB)}</td>
+    <td class="edit-cell">${fieldInput(idx,'floorG',r.floorG)}</td>
+    <td class="edit-cell">${fieldInput(idx,'date',r.date)}</td>
+    <td class="edit-cell">${fieldInput(idx,'type',r.category)}</td>
+    <td class="edit-cell">${fieldInput(idx,'note',r.note)}</td>
+    <td class="edit-cell"><button class="btn danger" data-delidx="${idx}" style="padding:5px 10px;">삭제</button></td>
+  </tr>`).join('');
+
+  tbody.querySelectorAll('.edit-cell-input').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      const idx = Number(el.dataset.idx), field = el.dataset.field;
+      editRows[idx][field] = el.value;
+    });
+    el.addEventListener('change', ()=>{
+      const idx = Number(el.dataset.idx), field = el.dataset.field;
+      editRows[idx][field] = el.value;
+    });
+  });
+  tbody.querySelectorAll('[data-delidx]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = Number(btn.dataset.delidx);
+      editRows.splice(idx,1);
+      renderEditableBody();
+    });
+  });
+}
+
+function addBlankEditRow(){
+  editRows.push({division:"",name:"",block:"",code:"",area:null,apt:null,officetel:null,floorB:"",floorG:"",date:"",type:"",note:"",category:"",region:""});
+  renderEditableBody();
+}
+
+function cancelEdit(){
+  editMode = false;
+  editUnlocked = false;
+  editRows = null;
+  renderBaselineTab();
+}
+
+async function saveEdit(){
+  const cleaned = editRows
+    .filter(r => (r.name||"").toString().trim() !== "")
+    .map(r=>{
+      const area = r.area===""||r.area===null||r.area===undefined ? null : Number(r.area);
+      const apt = r.apt===""||r.apt===null||r.apt===undefined ? null : Number(r.apt);
+      const officetel = r.officetel===""||r.officetel===null||r.officetel===undefined ? null : Number(r.officetel);
+      const name = (r.name||"").toString().trim();
+      const type = (r.type||"").toString().trim();
+      return {
+        division: (r.division||"").toString().trim(),
+        name,
+        block: (r.block||"").toString().trim(),
+        code: (r.code||"").toString().trim(),
+        area: (area!==null && isNaN(area)) ? null : area,
+        apt: (apt!==null && isNaN(apt)) ? null : apt,
+        officetel: (officetel!==null && isNaN(officetel)) ? null : officetel,
+        floorB: (r.floorB||"").toString().trim(),
+        floorG: (r.floorG||"").toString().trim(),
+        date: (r.date||"").toString().trim(),
+        type,
+        note: (r.note||"").toString().trim(),
+        category: deriveCategory(type, name),
+        region: deriveRegion(name),
+      };
+    });
+
+  const saveBtn = document.getElementById('btn-save-edit');
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = '저장 중...'; }
+  showToast('저장하는 중입니다. 잠시만 기다려주세요...');
+
+  const candidate = {updatedAt: new Date().toISOString(), unit:'pyeong', rows: cleaned};
+  const previous = baseline;
+  baseline = candidate;
+  const ok = await saveBaseline();
+
+  if(ok){
+    editMode = false;
+    editUnlocked = false;
+    editRows = null;
+    showToast('기준파일이 저장되었습니다.');
+    renderBaselineTab();
+  }else{
+    // 저장 실패 -> 이전 상태로 되돌리지 않고, 수정 내용을 그대로 유지해 재시도할 수 있게 함
+    baseline = previous;
+    showToast('저장에 실패했습니다. 네트워크를 확인한 뒤 저장을 다시 눌러주세요. (입력한 내용은 그대로 남아있어요)');
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = '저장'; }
+  }
+}
+
+async function downloadBaseline(){
+  showToast('엑셀 파일을 준비하는 중...');
+  try{ await ensureXLSX(); }catch(e){ showToast('엑셀 기능을 불러오지 못했습니다. 네트워크를 확인해주세요.'); return; }
+  const rows = baseline.rows;
+  const data = rows.map(r=>({
+    "사업단": r.division, "현장명": r.name, "블록/동 구분": r.block, "현장코드": r.code,
+    "연면적(평)": r.area===null? "" : r.area,
+    "세대수-아파트": r.apt===null? "" : r.apt,
+    "세대수-오피스텔": r.officetel===null? "" : r.officetel,
+    "지하층수": r.floorB, "지상층수": r.floorG, "준공일자": r.date, "건축물유형": r.category, "비고": r.note,
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{wch:14},{wch:38},{wch:9},{wch:11},{wch:12},{wch:10},{wch:11},{wch:8},{wch:8},{wch:11},{wch:10},{wch:40}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "기준파일");
+  XLSX.writeFile(wb, "기준파일_공사현장현황.xlsx");
+}
+
+function handleUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  showToast('엑셀 파일을 읽는 중...');
+  ensureXLSX().then(()=>{
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const data = new Uint8Array(ev.target.result);
+        const wb = XLSX.read(data, {type:'array', cellDates:true});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws, {defval:""});
+        const parsed = json.map(row=>{
+          const dateVal = row["준공일자"];
+          let dateStr = "";
+          if(dateVal instanceof Date){
+            dateStr = dateVal.toISOString().slice(0,10);
+          } else if(dateVal){
+            dateStr = String(dateVal).trim();
+          }
+          const type = row["건축물유형"]||"";
+          const name = row["현장명"]||"";
+          return {
+            division: row["사업단"]||"",
+            name: name,
+            block: row["블록/동 구분"]||"",
+            code: row["현장코드"]||"",
+            area: row["연면적(평)"]===""||row["연면적(평)"]===undefined ? null : Number(row["연면적(평)"]),
+            apt: row["세대수-아파트"]===""||row["세대수-아파트"]===undefined ? null : Number(row["세대수-아파트"]),
+            officetel: row["세대수-오피스텔"]===""||row["세대수-오피스텔"]===undefined ? null : Number(row["세대수-오피스텔"]),
+            floorB: row["지하층수"]? String(row["지하층수"]) : "",
+            floorG: row["지상층수"]? String(row["지상층수"]) : "",
+            date: dateStr,
+            type: type,
+            note: row["비고"]||"",
+            category: deriveCategory(type, name),
+            region: deriveRegion(name),
+          };
+        }).filter(r=>r.name);
+        if(parsed.length === 0){
+          showToast('읽어들인 현장이 0건입니다. 열 제목(현장명 등)이 다운로드한 기준파일과 같은지 확인해주세요. (교체가 진행되지 않아 기존 데이터는 안전합니다)');
+          return;
+        }
+        pendingUpload = parsed;
+        showUploadPreview(parsed);
+      }catch(err){
+        console.error(err);
+        showToast('파일을 읽는 중 오류가 발생했습니다. 엑셀 형식을 확인해주세요.');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }).catch(()=>{
+    showToast('엑셀 기능을 불러오지 못했습니다. 네트워크를 확인해주세요.');
+  });
+  e.target.value = "";
+}
+
+function showUploadPreview(parsed){
+  const box = document.getElementById('upload-preview');
+  box.classList.add('show');
+  box.innerHTML = `
+    <div class="row">
+      <div><b>${parsed.length}건</b>의 현장을 불러왔습니다. 반영 방법을 선택하세요.</div>
+    </div>
+    <div class="btns">
+      <button class="btn primary" id="btn-merge">병합 적용 (같은 현장은 갱신, 새 현장은 추가)</button>
+      <button class="btn danger" id="btn-replace">전체 교체 (기존 기준파일을 새 파일로 완전히 대체)</button>
+      <button class="btn ghost" id="btn-cancel-upload">취소</button>
+    </div>
+  `;
+  document.getElementById('btn-merge').addEventListener('click', ()=>applyUpload('merge'));
+  document.getElementById('btn-replace').addEventListener('click', ()=>{
+    if(confirm('기존 기준파일 데이터를 모두 삭제하고 새 파일로 교체합니다. 계속할까요?')) applyUpload('replace');
+  });
+  document.getElementById('btn-cancel-upload').addEventListener('click', ()=>{
+    pendingUpload = null;
+    document.getElementById('upload-preview').classList.remove('show');
+  });
+}
+
+async function applyUpload(mode){
+  if(!pendingUpload) return;
+  const previous = baseline;
+  let candidate;
+  if(mode==='replace'){
+    candidate = {updatedAt: new Date().toISOString(), unit:'pyeong', rows: pendingUpload};
+  }else{
+    const rows = baseline.rows.slice();
+    pendingUpload.forEach(nr=>{
+      const idx = rows.findIndex(r => (nr.code && r.code && r.code===nr.code) || (r.name===nr.name && r.block===nr.block));
+      if(idx>=0) rows[idx] = nr; else rows.push(nr);
+    });
+    candidate = {updatedAt: new Date().toISOString(), unit:'pyeong', rows};
+  }
+  showToast('저장하는 중입니다. 잠시만 기다려주세요...');
+  baseline = candidate;
+  const ok = await saveBaseline();
+  if(ok){
+    pendingUpload = null;
+    showToast('기준파일이 반영되었습니다.');
+    renderBaselineTab();
+  }else{
+    baseline = previous;
+    showToast('저장에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해주세요.');
+  }
+}
+
+/* ---------------- 초기화 ---------------- */
+(async function init(){
+  document.getElementById('app').innerHTML = '<div style="padding:60px;text-align:center;color:#888;">기준파일을 불러오는 중...</div>';
+  try{
+    await Promise.race([
+      loadBaseline(),
+      new Promise(resolve=>setTimeout(resolve, 9000)) // 읽기 제한시간(8초)보다 살짝 길게 -> 느린 읽기도 끝까지 기다린 뒤 화면 표시
+    ]);
+  }catch(e){ /* 무시하고 아래에서 기본값 보정 */ }
+  if(!baseline){ baseline = {updatedAt: new Date().toISOString(), unit:'pyeong', rows: DEFAULT_DATA}; }
+  render();
+})();
+
+})();
+</script>
